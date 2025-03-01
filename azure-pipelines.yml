@@ -25,6 +25,12 @@ stages:
       demands: Agent.Name -equals mylocal
 
     steps:
+    
+    - task: CmdLine@2
+      displayName: 'Check Maven Version'
+      inputs:
+          script: 'mvn -version'
+
     - task: Maven@4
       displayName: 'Maven Package'
       inputs:
