@@ -25,10 +25,11 @@ stages:
       demands: Agent.Name -equals mylocal
 
     steps:
-    - task: Maven@3
+    - task: Maven@1
       displayName: 'Maven Package'
       inputs:
         mavenPomFile: 'pom.xml'
+        mavenVersionOption: 'Default'
 
     - task: CopyFiles@2
       displayName: 'Copy Files to artifact staging directory'
