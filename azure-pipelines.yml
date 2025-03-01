@@ -25,7 +25,7 @@ stages:
       demands: Agent.Name -equals mylocal
 
     steps:
-    - task: Maven@1
+    - task: Maven@4
       displayName: 'Maven Package'
       inputs:
         mavenPomFile: 'pom.xml'
