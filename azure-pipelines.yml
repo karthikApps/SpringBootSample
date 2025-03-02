@@ -1,18 +1,15 @@
-# Maven package Java project Web App to Linux on Azure
-# Build your Java project and deploy it to Azure as a Linux web app
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
 trigger:
 - main
 
 variables:
-
   # Web app name
   webAppName: 'javawebapp0001'
-
-  # Environment name
   environmentName: 'javawebapp0001'
+
+  # Docker Registry service connection and repository
+  dockerRegistryServiceConnection: 'DockerServiceConnection'  # Make sure this matches your service connection name
+  containerRegistry: 'karthik1n/springbootsamplerepo'  # Docker Hub repository (if using Docker Hub)
+  imageName: 'my-app'
 
 stages:
 - stage: Build
@@ -23,13 +20,11 @@ stages:
     pool:
       name: mylocal
       demands: Agent.Name -equals MSI
-
     steps:
-    
     - task: CmdLine@2
       displayName: 'Check Maven Version'
       inputs:
-          script: 'mvn -version'
+        script: 'mvn -version'
 
     - task: Maven@4
       displayName: 'Maven Package'
@@ -37,7 +32,6 @@ stages:
         mavenPomFile: '$(Build.SourcesDirectory)/pom.xml'
         goals: 'clean install'
         options: '-X'
-    
 
     - task: CopyFiles@2
       displayName: 'Copy Files to artifact staging directory'
@@ -51,17 +45,17 @@ stages:
 
 - stage: Docker
   displayName: Docker build and push stage
+  variables:
+    imageName: 'my-app'  # The name of the Docker image
+    dockerRegistryServiceConnection: 'DockerServiceConnection'  # Service connection for Docker registry
+    containerRegistry: 'karthik1n/springbootsamplerepo'  # Docker Hub repository (if using Docker Hub)
+
   jobs:
   - job: DockerBuildAndPush
     displayName: Build and Push Docker Image
     pool:
       name: mylocal
       demands: Agent.Name -equals MSI
-    
-  variables:
-    imageName: 'my-app'  # The name of the Docker image
-    dockerRegistryServiceConnection: 'DockerServiceConnection'  # Service connection for Docker registry
-    containerRegistry: 'karthik1n/springbootsamplerepo'  # Azure Container Registry URL
 
     steps:
     - task: CmdLine@2
@@ -81,11 +75,11 @@ stages:
         command: 'build'
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'  # Path to Dockerfile
         buildContext: '$(Build.SourcesDirectory)'  # Build context
-        tags: '$(dockerRegistry)/$(dockerImageName):$(dockerTag)'  # Tagging the image
+        tags: '$(containerRegistry)/$(imageName):$(Build.BuildId)'  # Tagging the image with the build ID
 
     - task: Docker@2
       displayName: 'Push Docker Image'
       inputs:
         command: 'push'
         containerRegistry: $(dockerRegistryServiceConnection)  # Reference your service connection here
-        imageName: '$(dockerRegistry)/$(dockerImageName):$(dockerTag)'  # Correct image name and tag
+        imageName: '$(containerRegistry)/$(imageName):$(Build.BuildId)'  # Correct image name and tag
