@@ -58,6 +58,11 @@ stages:
       name: mylocal
       demands: Agent.Name -equals MSI
     
+  variables:
+    imageName: 'my-app'  # The name of the Docker image
+    dockerRegistryServiceConnection: 'DockerServiceConnection'  # Service connection for Docker registry
+    containerRegistry: 'karthik1n/springbootsamplerepo'  # Azure Container Registry URL
+
     steps:
     - task: CmdLine@2
       displayName: 'Check Docker Version'
@@ -68,7 +73,7 @@ stages:
       displayName: 'Login to Docker Registry'
       inputs:
         command: 'login'
-        containerRegistry: 'DockerServiceConnection'  # Reference your service connection here
+        containerRegistry: $(dockerRegistryServiceConnection)  # Reference your service connection here
 
     - task: Docker@2
       displayName: 'Build Docker Image'
@@ -82,5 +87,5 @@ stages:
       displayName: 'Push Docker Image'
       inputs:
         command: 'push'
-        containerRegistry: 'DockerServiceConnection'  # Reference your service connection here
+        containerRegistry: $(dockerRegistryServiceConnection)  # Reference your service connection here
         imageName: '$(dockerRegistry)/$(dockerImageName):$(dockerTag)'  # Correct image name and tag
