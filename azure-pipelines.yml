@@ -76,6 +76,7 @@ stages:
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'  # Path to Dockerfile
         buildContext: '$(Build.SourcesDirectory)'  # Build context
         tags: '$(containerRegistry)/$(imageName):$(Build.BuildId)'  # Tagging the image with the build ID
+        options: '--no-cache --progress=plain'
 
     - task: Docker@2
       displayName: 'Push Docker Image'
